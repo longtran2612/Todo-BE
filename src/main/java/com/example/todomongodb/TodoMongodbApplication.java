@@ -7,9 +7,11 @@ import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @SpringBootApplication
 @EnableMongoAuditing
+@EnableSwagger2
 public class TodoMongodbApplication {
 
     public static void main(String[] args) {
