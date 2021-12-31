@@ -4,6 +4,7 @@ import com.example.todomongodb.entity.Account;
 import com.example.todomongodb.entity.User;
 import com.example.todomongodb.enumEntity.RoleType;
 import com.example.todomongodb.jwt.JwtUtils;
+import com.example.todomongodb.repository.UserRepository;
 import com.example.todomongodb.request.TokenRefreshRequest;
 import com.example.todomongodb.repository.AccountRepository;
 import com.example.todomongodb.request.ChangePasswordRequest;
@@ -21,6 +22,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,11 +47,21 @@ public class AuthController {
     private UserService userService;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private JwtUtils jwtUtils;
 
     @GetMapping("/{id}")
     public Account getAccountByUsername(@PathVariable("id") String username){
         return accountRepository.findByUsername(username).get();
+    }
+    @GetMapping("/check/{phone}")
+    public ResponseEntity<?> checkPhoneNumber(@PathVariable("phone") String phone){
+        if (accountRepository.existsByUsername(phone)) {
+            return ResponseEntity.ok(true);
+        }
+        return ResponseEntity.ok(false);
     }
 
     @PostMapping("/register")
@@ -91,7 +103,13 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         Account account = (Account) authentication.getPrincipal();
         String jwt = jwtUtils.generateJwtToken(authentication);
-        return ResponseEntity.ok(new JwtResponse(jwt, account));
+
+        //generate a refresh token for refresh access token
+        String refreshToken = jwtUtils.generateJwtRefreshToken(account.getUsername());
+        accountService.setRefreshToken(account.getUsername(), refreshToken);
+        User user = userRepository.findDistinctByPhone(account.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException("Không tồn tại tài khoản " + account.getUsername()));
+        return ResponseEntity.ok(new JwtResponse(jwt,refreshToken, user, account));
     }
     @PostMapping("/refresh_token")
     public ResponseEntity<?> refreshToken(@Valid @RequestBody TokenRefreshRequest request){
