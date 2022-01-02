@@ -13,5 +13,6 @@ public interface UserService {
     User get(String id);
     List<User> getAll();
     User update(User user);
+    void partialUpdate(String userId, String fieldName, Object fieldValue);
 
 }

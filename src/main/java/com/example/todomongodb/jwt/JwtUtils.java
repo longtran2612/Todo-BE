@@ -23,6 +23,7 @@ public class JwtUtils {
 
     @Value("${JWT_EXPIRATION}")
     private Long jwtExpirationMs;
+
     @Value("${JWT_REFRESH_EXPIRATION}")
     private Long jwtRefreshExpirationMs;
 
@@ -36,7 +37,6 @@ public class JwtUtils {
                 .signWith(SignatureAlgorithm.HS512, jwtSecretKey)
                 .compact();
     }
-
 
     public String generateJwtTokenWithAccountId(String accountId) {
         return Jwts.builder()
@@ -59,6 +59,7 @@ public class JwtUtils {
     public String getUserNameFromJwtToken(String token) {
         return Jwts.parser().setSigningKey(jwtSecretKey).parseClaimsJws(token).getBody().getSubject();
     }
+
     public boolean validateJwtToken(String authToken) {
         try {
             Jwts.parser().setSigningKey(jwtSecretKey).parseClaimsJws(authToken);
