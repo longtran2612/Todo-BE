@@ -1,2 +1,9 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017
+      database: LongTran
+
 server:
-  port: 8000
+  port: 7000
+
